@@ -11,16 +11,20 @@ class Channel:
     def __init__(self, args):
         self.args = args
         self.url = self.args.get('url').replace('#', '%23').replace('\\n', '%0A')
-        self.base_url = self.url.split("?")[0] if '?' in self.url else self.url
         self.tag = self.args.get('marker')
-        self.data = {}
-        self.injs = []
-        self.inj_idx = 0
         proxy = self.args.get('proxy')
         if proxy:
             self.proxies = {'http': proxy, 'https': proxy}
         else:
             self.proxies = {}
+        if not self.args.get('verify_ssl'):
+            urllib3.disable_warnings()  
+        self.reload_method()    
+            
+    def reload_method(self):
+        self.injs = []
+        self.inj_idx = 0
+        self.data = {}
         self.get_params = {}
         self.post_params = {}
         self.header_params = {}
@@ -34,9 +38,7 @@ class Channel:
             self._parse_post(all_injectable=True)
             self._parse_header(all_injectable=True)
         self._parse_method()
-        if not self.args.get('verify_ssl'):
-            urllib3.disable_warnings()
-        
+
     def _parse_method(self):
         if self.args.get('method'):
             self.http_method = self.args.get('method')
@@ -46,6 +48,7 @@ class Channel:
             self.http_method = 'GET'
 
     def _parse_url(self):
+        self.base_url = self.url.split("?")[0] if '?' in self.url else self.url
         url_path = parse.urlparse(self.url).path
         if self.tag not in url_path:
             return

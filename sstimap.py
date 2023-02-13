@@ -26,6 +26,7 @@ def main():
         InteractiveShell(args).cmdloop()
     elif args['crawlDepth'] or args['forms']:
         # crawler mode
+        channel = Channel(args)
         urls = set([args.get('url')])
         if args['crawlDepth']:
             crawled_urls = set()
@@ -34,17 +35,19 @@ def main():
             urls.update(crawled_urls)
         if not args['forms']:
             for url in urls:
-                args['url'] = url
-                checks.check_template_injection(Channel(args))
+                channel.url = url
+                channel.reload_method()
+                checks.check_template_injection(channel)
         else:
             forms = set()
             for url in urls:
                 forms.update(findPageForms(url, args))
             for form in forms:
-                args['url'] = form[0]
+                channel.url = form[0]
                 args['method'] = form[1]
                 args['data'] = urllib.parse.parse_qs(form[2], keep_blank_values=True)
-                checks.check_template_injection(Channel(args))
+                channel.reload_method()
+                checks.check_template_injection(channel)
     else:
         # predetermined mode
         checks.check_template_injection(Channel(args))
