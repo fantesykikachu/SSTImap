@@ -1,10 +1,13 @@
 import requests
 import urllib3
+import os
+import time
 from utils.loggers import log
 from urllib import parse
 from copy import deepcopy
 import utils.config
 from utils.random_agent import get_agent
+from utils.config import base_path
 
 
 class Channel:
@@ -18,8 +21,12 @@ class Channel:
         else:
             self.proxies = {}
         if not self.args.get('verify_ssl'):
-            urllib3.disable_warnings()  
-        self.reload_method()    
+            urllib3.disable_warnings()
+        self.reload_method()
+        if args['crawlDepth'] or args['forms']:
+            resultsFile = os.path.join(base_path, time.strftime("results-%m%d%Y_%I%M%p.csv").lower())
+            self.resultsFP = open(resultsFile, "a")
+            self.resultsFP.writelines("Target URL,Method,Parameter,Engine\n")
             
     def reload_method(self):
         self.injs = []

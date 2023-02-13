@@ -81,6 +81,7 @@ def print_injection_summary(channel):
         writing = '\033[91mno\033[0m'
     log.log(21, f"""SSTImap identified the following injection point:
 
+  URL: {channel.url}
   {channel.injs[channel.inj_idx]['field']} parameter: {channel.injs[channel.inj_idx]['param']}
   Engine: {channel.data.get('engine').capitalize()}
   Injection: {prefix}{render}{suffix}
@@ -95,6 +96,11 @@ def print_injection_summary(channel):
     File read: {f'{chr(27)}[91mno{chr(27)}[0m' if not channel.data.get('read') else f'{chr(27)}[92mok{chr(27)}[0m'}
     Code evaluation: {evaluation}
 """)
+
+
+def save_injection_summary(channel):
+    line = "%s,%s,%s,%s %s" % (channel.url, channel.injs[channel.inj_idx]['field'], channel.injs[channel.inj_idx]['param'], channel.data.get('engine').capitalize(), '\n')
+    channel.resultsFP.write(line)
 
 
 def detect_template_injection(channel):
@@ -116,6 +122,7 @@ def check_template_injection(channel):
         log.log(22, "Tested parameters appear to be not injectable.")
         return current_plugin
     print_injection_summary(channel)
+    save_injection_summary(channel)
     if not any(f for f, v in channel.args.items() if f in ('os_cmd', 'os_shell', 'upload', 'download', 'tpl_shell',
                                                            'tpl_code', 'bind_shell', 'reverse_shell', 'eval_shell',
                                                            'eval_code', 'interactive') and v):
