@@ -178,6 +178,7 @@ Exploitation:
         try:
             if self.sstimap_options['crawlDepth'] or self.sstimap_options['forms']:
                 # crawler mode
+                self.channel = Channel(self.sstimap_options)
                 urls = set([self.sstimap_options['url']])
                 if self.sstimap_options['crawlDepth']:
                     crawled_urls = set()
@@ -186,18 +187,18 @@ Exploitation:
                     urls.update(crawled_urls)
                 if not self.sstimap_options['forms']:
                     for url in urls:
-                        self.sstimap_options['url'] = url
-                        self.channel = Channel(self.sstimap_options)
+                        self.channel.url = url
+                        self.channel.reload_method()
                         self.current_plugin = checks.check_template_injection(self.channel)
                 else:
                     forms = set()
                     for url in urls:
                         forms.update(findPageForms(url, self.sstimap_options))
                     for form in forms:
-                        self.sstimap_options['url'] = form[0]
+                        self.channel.url = form[0]
                         self.sstimap_options['method'] = form[1]
                         self.sstimap_options['data'] = parse.parse_qs(form[2], keep_blank_values=True)
-                        self.channel = Channel(self.sstimap_options)
+                        self.channel.reload_method()
                         self.current_plugin = checks.check_template_injection(self.channel)
             else:
                 # predetermined mode
